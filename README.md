@@ -3,6 +3,15 @@
 -plugin evdevmouse -plugin evdevkeyboard -plugin evdevtouch:/dev/input/event##:rotate=90
 -plugin evdevmouse:/dev/input/mouse0
 
+스크립트 자동실행
+1. /etc/rc.local
+2. /root/bacs.sh
+3. /home/bacs/CrucialTrak/Glance/fg_gui.sh (다시 실행해놓고 싶으면 ./fg_gui.sh &)
+4. ./Glance -platform linuxfb
+
+== CUI terminal 90도 회전 ==
+echo 1 > /sys/class/graphics/fbcon/rotate_all
+
 linuxdeployqt Glance -qmldir=/home/jimmyshin/Qt5.13.0/5.13.0/gcc_64/qml/ -extra-plugins=platforms/libqlinuxfb.so -verbose=3
 linuxdeployqt Glance -qmldir=/home/jimmyshin/Qt5.13.0/5.10.0/gcc_64/qml/ -extra-plugins=platforms/libqlinuxfb.so,platforminputcontexts/libqtvirtualkeyboardplugin.so -verbose=3
 
@@ -116,6 +125,16 @@ make -j2 ARCH=aarch64 CROSS_COMPILE=/usr/bin/aarch64-linux-gnu-
 make -j2 ARCH=aarch64 CROSS_COMPILE=/usr/bin/aarch64-linux-gnu-
 
 ./configure -no-opengl -device-option CROSS_COMPILE=/usr/bin/aarch64-linux-gnu- -opensource -confirm-license -optimized-qmake -reduce-exports -release -make libs -prefix /usr/local/Qt-5.13.0-arm
+
 ./configure -xplatform linux-aarch64-gnu-g++ -device-option CROSS_COMPILE=/usr/bin/aarch64-linux-gnu- -opensource -confirm-license -optimized-qmake -reduce-exports -release -make libs -prefix /usr/local/Qt-5.13.0-arm
+
 ./configure -no-opengl -xplatform linux-aarch64-gnu-g++ -device-option CROSS_COMPILE=/usr/bin/aarch64-linux-gnu- -opensource -confirm-license -optimized-qmake -reduce-exports -release -make libs -prefix /usr/local/Qt-5.13.0-aarch64
 // 성공, -no-opengl 해야 됨... ㅠㅠ, xcb 안깔림... qtgraphicaleffects 안깔림...
+
+// 글랜스 arm64 xwindow 크로스컴파일 (in Ubuntu2.vdi)
+../../qt-everywhere-src-5.13.0/configure -no-opengl -xplatform linux-aarch64-gnu-g++ -device-option CROSS_COMPILE=/usr/bin/aarch64-linux-gnu- -opensource -confirm-license -optimized-qmake -reduce-exports -release -make libs -sysroot ~/JimmyFolder2/installQt/GlanceBoard/sysroot -prefix /usr/local/Qt-5.13.0-aarch64-xwindow
+// configure 성공, xcb 안깔림...
+
+../../qt-everywhere-src-5.13.0/configure -qt-xcb -no-opengl -xplatform linux-aarch64-gnu-g++ -device-option CROSS_COMPILE=/usr/bin/aarch64-linux-gnu- -opensource -confirm-license -optimized-qmake -reduce-exports -release -make libs -sysroot ~/JimmyFolder2/installQt/GlanceBoard/sysroot -prefix /usr/local/Qt-5.13.0-aarch64-xwindow
+// configure 성공, xcb 설정됨!!
+-> 보드에서 sudo apt-get install '^libxcb.*-dev' libx11-xcb-dev libglu1-mesa-dev libxrender-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev 먼저 하고나서 sysroot 땡겨오기.
