@@ -33,6 +33,12 @@ sudo killall BACSVerify Verify.sh
 sudo killall outUI.sh SmartDoor_Outside
 sudo killall insideUI.sh SmartDoor_Inside
 
+====================== sysroot 당겨올 경로 ======================
+rsync -avz root@192.168.16.25:/lib sysroot
+rsync -avz root@192.168.16.25:/usr/include sysroot/usr
+rsync -avz root@192.168.16.25:/usr/lib sysroot/usr
+rsync -avz root@192.168.16.25:/opt/vc sysroot/opt
+
 ====================== root 권한으로 실행시 xcb 오류 뜨는 경우 ======================
 export DISPLAY=:0.0
 export XAUTHORITY=/home/bacs/.Xauthority
@@ -136,5 +142,8 @@ make -j2 ARCH=aarch64 CROSS_COMPILE=/usr/bin/aarch64-linux-gnu-
 // configure 성공, xcb 안깔림...
 
 ../../qt-everywhere-src-5.13.0/configure -qt-xcb -no-opengl -xplatform linux-aarch64-gnu-g++ -device-option CROSS_COMPILE=/usr/bin/aarch64-linux-gnu- -opensource -confirm-license -optimized-qmake -reduce-exports -release -make libs -sysroot ~/JimmyFolder2/installQt/GlanceBoard/sysroot -prefix /usr/local/Qt-5.13.0-aarch64-xwindow
-// configure 성공, xcb 설정됨!!
+// configure 성공, xcb 설정됨, 개발PC에 $sysroot/$prefix 에 넣어야 작동함.
+
+../../qt-everywhere-src-5.13.0/configure -qt-xcb -no-opengl -xplatform linux-aarch64-gnu-g++ -device-option CROSS_COMPILE=/usr/bin/aarch64-linux-gnu- -opensource -confirm-license -optimized-qmake -reduce-exports -release -make libs -sysroot ~/JimmyFolder2/installQt/GlanceBoard/sysroot -extprefix /usr/local/Qt-5.13.0-aarch64-xwindow
+// configure 성공, xcb 설정됨, 개발PC에 $extprefix 경로에 넣으면 잘 됨.
 -> 보드에서 sudo apt-get install '^libxcb.*-dev' libx11-xcb-dev libglu1-mesa-dev libxrender-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev 먼저 하고나서 sysroot 땡겨오기.
