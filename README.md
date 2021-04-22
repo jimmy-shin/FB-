@@ -3,11 +3,19 @@
 -plugin evdevmouse -plugin evdevkeyboard -plugin evdevtouch:/dev/input/event##:rotate=90
 -plugin evdevmouse:/dev/input/mouse0
 
-스크립트 자동실행
-1. /etc/rc.local
-2. /root/bacs.sh
-3. /home/bacs/CrucialTrak/Glance/fg_gui.sh (다시 실행해놓고 싶으면 ./fg_gui.sh &)
-4. ./Glance -platform linuxfb
+=========== windeployqt ============
+windeployqt --release --qmldir "D:\Embedded\QT Projects\Trio_LCD" "TrioLCD.exe" // 필요 라이브러리 복사
+binarycreator.exe -c config/config.xml -p packages "Trio_LCD_Setup.exe" // 설치 exe 생성
+
+=========== Trio xWindow, TextMode ===========
+sudo systemctl set-default multi-user.target // TextMode
+sudo systemctl set-default graphical.target // xWindow
+
+=========== Trio terminal welcome message ===========
+/etc/update-motd.d/00-header
+TERM=linux toilet -f standard -F gay -k "        Trio"
+/etc/update-motd.d/10-help-text
+printf " * Website: http://www.aibion.com\n"
 
 == CUI terminal 90도 회전 ==
 echo 1 > /sys/class/graphics/fbcon/rotate_all
@@ -16,7 +24,7 @@ linuxdeployqt Glance -qmldir=/home/jimmyshin/Qt5.13.0/5.13.0/gcc_64/qml/ -extra-
 linuxdeployqt Glance -qmldir=/home/jimmyshin/Qt5.13.0/5.10.0/gcc_64/qml/ -extra-plugins=platforms/libqlinuxfb.so,platforminputcontexts/libqtvirtualkeyboardplugin.so -verbose=3
 
 ====================== 도어 내부 UI ======================
-cp ../SmartDoor/build/desktop/release/SmartDoor_Inside/SmartDoor_Inside ./
+cp ../../../../build/desktop/release/SmartDoor_Inside/SmartDoor_Inside ./
 linuxdeployqt SmartDoor_Inside -qmldir=/home/jimmyshin/Qt5.13.0/5.13.0/gcc_64/qml/ -extra-plugins=platforms/libqlinuxfb.so,generic/libqevdevtouchplugin.so -verbose=3
 rsync -avz ./* bacs@192.168.111.87:/home/bacs/CrucialTrak/SmartDoor_Inside/
 
@@ -24,6 +32,10 @@ rsync -avz ./* bacs@192.168.111.87:/home/bacs/CrucialTrak/SmartDoor_Inside/
 cp ../../../../build/desktop/release/SmartDoor_Outside/SmartDoor_Outside ./
 linuxdeployqt SmartDoor_Outside -qmldir=/home/jimmyshin/Qt5.13.0/5.13.0/gcc_64/qml/ -extra-plugins=platforms/libqlinuxfb.so,generic/libqevdevtouchplugin.so -verbose=3
 rsync -avz ./* bacs@192.168.111.87:/home/bacs/CrucialTrak/SmartDoor_Outside/
+
+====================== Duo Rev2.0 UI ======================
+cp ../Duo_Rev2 ./
+linuxdeployqt Duo_Rev2 -qmldir=/home/jimmyshin/Qt5.13.0/5.13.0/gcc_64/qml/ -extra-plugins=platforms/libqlinuxfb.so,generic/libqevdevtouchplugin.so -verbose=3
 
 ~/withrobot/stop.sh
 sudo killall BACSVerify Verify.sh
@@ -33,11 +45,35 @@ sudo killall BACSVerify Verify.sh
 sudo killall outUI.sh SmartDoor_Outside
 sudo killall insideUI.sh SmartDoor_Inside
 
+====================== rtp 테스트 url ======================
+rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov
+
+====================== 현재 폴더 png파일 IEC61966-2.1 -> sRGB built-in 일괄 변경 ======================
+mogrify -format png *.*
+
+====================== QtMultimedia 사용하려면 설치해야 하는 apt-get ======================
+qml-module-qtmultimedia-gles
+libc6
+libgcc1
+libqt5core5a
+libqt5gui5
+libqt5multimedia5
+libqt5multimedia5-plugins
+libqt5multimediaquick-p5
+libqt5qml5
+libqt5quick5
+libqt5quick5-gles
+libstdc++6
+qml-module-qtquick2
+
 ====================== sysroot 당겨올 경로 ======================
 rsync -avz root@192.168.16.25:/lib sysroot
 rsync -avz root@192.168.16.25:/usr/include sysroot/usr
 rsync -avz root@192.168.16.25:/usr/lib sysroot/usr
 rsync -avz root@192.168.16.25:/opt/vc sysroot/opt
+
+====================== rsync 포트 지정 ======================
+rsync -avzog -e 'ssh -p 23' bacs@10.10.106.101:/lib sysroot
 
 ====================== root 권한으로 실행시 xcb 오류 뜨는 경우 ======================
 export DISPLAY=:0.0
@@ -144,6 +180,14 @@ make -j2 ARCH=aarch64 CROSS_COMPILE=/usr/bin/aarch64-linux-gnu-
 ../../qt-everywhere-src-5.13.0/configure -qt-xcb -no-opengl -xplatform linux-aarch64-gnu-g++ -device-option CROSS_COMPILE=/usr/bin/aarch64-linux-gnu- -opensource -confirm-license -optimized-qmake -reduce-exports -release -make libs -sysroot ~/JimmyFolder2/installQt/GlanceBoard/sysroot -prefix /usr/local/Qt-5.13.0-aarch64-xwindow
 // configure 성공, xcb 설정됨, 개발PC에 $sysroot/$prefix 에 넣어야 작동함.
 
+현재 경로에서 실행 : /home/jimmyshin/JimmyFolder2/installQt/GlanceBoard/qt5build
+
 ../../qt-everywhere-src-5.13.0/configure -qt-xcb -no-opengl -xplatform linux-aarch64-gnu-g++ -device-option CROSS_COMPILE=/usr/bin/aarch64-linux-gnu- -opensource -confirm-license -optimized-qmake -reduce-exports -release -make libs -sysroot ~/JimmyFolder2/installQt/GlanceBoard/sysroot -extprefix /usr/local/Qt-5.13.0-aarch64-xwindow
 // configure 성공, xcb 설정됨, 개발PC에 $extprefix 경로에 넣으면 잘 됨.
+-> 보드에서 sudo apt-get install '^libxcb.*-dev' libx11-xcb-dev libglu1-mesa-dev libxrender-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev 먼저 하고나서 sysroot 땡겨오기.
+
+../../qt-everywhere-src-5.13.0/configure -qt-xcb -xplatform linux-aarch64-gnu-g++ -device-option CROSS_COMPILE=/usr/bin/aarch64-linux-gnu- -opensource -confirm-license -optimized-qmake -reduce-exports -release -make libs -sysroot ~/JimmyFolder2/installQt/GlanceBoard/sysroot -extprefix /usr/local/Qt-5.13.0-aarch64-xwindow-multimedia
+
+../../qt-everywhere-src-5.13.0/configure -qt-xcb -opengl desktop -qt-libpng -qt-libjpeg -qt-freetype -make libs -xplatform linux-aarch64-gnu-g++ -device-option CROSS_COMPILE=/usr/bin/aarch64-linux-gnu- -opensource -confirm-license -optimized-qmake -reduce-exports -release -make libs -sysroot ~/JimmyFolder2/installQt/GlanceBoard/sysroot -extprefix /usr/local/Qt-5.13.0-aarch64-xwindow-multimedia
+// configure 성공, xcb 설정됨, opengl 설정됨, 개발PC에 $extprefix 경로에 넣으면 잘 됨.
 -> 보드에서 sudo apt-get install '^libxcb.*-dev' libx11-xcb-dev libglu1-mesa-dev libxrender-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev 먼저 하고나서 sysroot 땡겨오기.
