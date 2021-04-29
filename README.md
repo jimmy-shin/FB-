@@ -3,6 +3,15 @@
 -plugin evdevmouse -plugin evdevkeyboard -plugin evdevtouch:/dev/input/event##:rotate=90
 -plugin evdevmouse:/dev/input/mouse0
 
+=========== 수동 빌드 ============
+/home/jimmyshin/Qt5.13.0/5.13.0/gcc_64/bin/qmake -o Makefile ../../../Trio_LCD.pro -spec linux-g++ CONFIG+=debug CONFIG+=qml_debug
+make -j2
+make clean -j2
+
+/usr/local/Qt-5.13.0-aarch64-xwindow-multimedia/bin/qmake -o Makefile ../../../Trio_LCD.pro -spec linux-aarch64-gnu-g++ CONFIG+=qtquickcompiler
+make -j2
+make clean -j2
+
 =========== windeployqt ============
 windeployqt --release --qmldir "D:\Embedded\QT Projects\Trio_LCD" "TrioLCD.exe" // 필요 라이브러리 복사
 binarycreator.exe -c config/config.xml -p packages "Trio_LCD_Setup.exe" // 설치 exe 생성
@@ -10,6 +19,15 @@ binarycreator.exe -c config/config.xml -p packages "Trio_LCD_Setup.exe" // 설�
 =========== Trio xWindow, TextMode ===========
 sudo systemctl set-default multi-user.target // TextMode
 sudo systemctl set-default graphical.target // xWindow
+
+=========== TextMode 자동 로그인 ===========
+sudo mkdir /etc/systemd/system/getty@tty1.service.d
+sudo vi /etc/systemd/system/getty@tty1.service.d/autologin.conf
+[Service]
+ExecStart=
+ExecStart=-/sbin/agetty --autologin 계정이름 --noclear %I 38400 linux
+Type=
+Type=simple
 
 =========== Trio terminal welcome message ===========
 /etc/update-motd.d/00-header
