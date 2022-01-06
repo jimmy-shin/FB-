@@ -3,6 +3,19 @@
 -plugin evdevmouse -plugin evdevkeyboard -plugin evdevtouch:/dev/input/event##:rotate=90
 -plugin evdevmouse:/dev/input/mouse0
 
+=========== 프레임버퍼 영상 네트워크 재생 ===========
+ffmpeg -f fbdev -framerate 25 -i /dev/fb0 -c:v libx264 -preset ultrafast -tune zerolatency -maxrate 2000k -bufsize 4000k -vf "format=yuv420p" -g 50 -f rtp_mpegts "rtp://10.10.106.122:20001"
+ffmpeg -f fbdev -framerate 25 -i /dev/fb0 -c:v libx264 -preset ultrafast -tune zerolatency -maxrate 2000k -bufsize 4000k -vf "format=yuv420p,hflip" -g 50 -f rtp_mpegts "rtp://10.10.106.122:20001"
+ffmpeg -f fbdev -framerate 25 -i /dev/fb0 -c:v libx264 -preset ultrafast -tune zerolatency -maxrate 2000k -bufsize 4000k -vf "hflip" -g 50 -f rtp_mpegts "rtp://10.10.106.122:20001"
+ffmpeg -f fbdev -framerate 25 -i /dev/fb0 -c:v libx264 -preset ultrafast -tune zerolatency -maxrate 2000k -bufsize 4000k -vf "format=yuv420p" -g 50 -f rtp_mpegts "rtp://10.10.106.103:20001" > /dev/null 2>&1
+ffmpeg -f fbdev -framerate 25 -i /dev/fb0 -c:v libx264 -preset ultrafast -tune zerolatency -maxrate 2000k -bufsize 4000k -vf "format=yuv420p,hflip" -g 50 -f rtp_mpegts "rtp://10.10.106.103:20001" > /dev/null 2>&1
+ffmpeg -f fbdev -framerate 25 -i /dev/fb0 -c:v libx264 -preset ultrafast -tune zerolatency -maxrate 2000k -bufsize 4000k -vf "hflip" -g 50 -f rtp_mpegts "rtp://10.10.106.103:20001" > /dev/null 2>&1
+--> rtp 주소는 vlc 플레이할 PC 주소로.
+
+=========== fb0에서 rtp 재생 ===========
+ffmpeg -i "rtp://10.10.106.103:20001" -pix_fmt bgra -f fbdev /dev/fb0
+ffmpeg -i "rtp://10.10.106.103:20001" -pix_fmt bgra -f fbdev /dev/fb0 > /dev/null 2>&1
+
 =========== 수동 빌드 ============
 /home/jimmyshin/Qt5.13.0/5.13.0/gcc_64/bin/qmake -o Makefile ../../../Trio_LCD.pro -spec linux-g++ CONFIG+=debug CONFIG+=qml_debug
 make -j2
@@ -31,7 +44,7 @@ Type=simple
 
 =========== Trio terminal welcome message ===========
 /etc/update-motd.d/00-header
-TERM=linux toilet -f standard -F gay -k "        Trio"
+TERM=linux toilet -f standard -F metal -k "        Trio"
 /etc/update-motd.d/10-help-text
 printf " * Website: http://www.aibion.com\n"
 
@@ -58,11 +71,6 @@ linuxdeployqt Duo_Rev2 -qmldir=/home/jimmyshin/Qt5.13.0/5.13.0/gcc_64/qml/ -extr
 ~/withrobot/stop.sh
 sudo killall BACSVerify Verify.sh
 
-====================== Killall ======================
-~/CrucialTrak/
-sudo killall outUI.sh SmartDoor_Outside
-sudo killall insideUI.sh SmartDoor_Inside
-
 ====================== rtp 테스트 url ======================
 rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov
 
@@ -84,6 +92,41 @@ libqt5quick5-gles
 libstdc++6
 qml-module-qtquick2
 
+====================== xcb 사용하려면 설치해야 하는 apt-get ======================
+libxcb1-dev
+libx11-dev
+libx11-xcb-dev
+libxext-dev
+libxfixes-dev
+libxi-dev
+libxrender-dev
+libxcb1-dev
+libxcb-glx0-dev
+libxcb-keysyms1
+libxcb-keysyms1-dev
+libxcb-image0-dev
+libxcb-shm0-dev
+libxcb-icccm4-dev
+libxcb-sync-dev
+libxcb-xfixes0-dev
+libxcb-shape0-dev
+libxcb-randr0-dev
+libxcb-render-util0-dev
+libxcb-xinerama0-dev
+libxkbcommon-dev
+libxkbcommon-x11-dev
+build-essential
+
+====================== Opengl 사용하려면 설치해야 하는 apt-get ======================
+build-essential
+libgl1-mesa-dev
+libglu1-mesa-dev
+libglut-dev
+freeglut3-dev
+mesa-common-dev
+libsdl1.2-dev
+
+
 ====================== sysroot 당겨올 경로 ======================
 rsync -avz root@192.168.16.25:/lib sysroot
 rsync -avz root@192.168.16.25:/usr/include sysroot/usr
@@ -96,8 +139,8 @@ rsync -avzog -e 'ssh -p 23' bacs@10.10.106.101:/lib sysroot
 ====================== root 권한으로 실행시 xcb 오류 뜨는 경우 ======================
 export DISPLAY=:0.0
 export XAUTHORITY=/home/bacs/.Xauthority
-
 tar -zcvf release.tar.gz ../../../build/desktop/release/* 압축
+
 tar -zxvf release.tar.gz 압축해제
 
 tar -xvf (파일명).tar.xz 압축해제
