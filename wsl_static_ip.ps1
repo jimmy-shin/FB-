@@ -1,6 +1,9 @@
+echo "Start sleep for 5 seconds..."
+Start-Sleep -Seconds 5
+
 bash.exe -c "sudo service ssh start"
 bash.exe -c "sudo service redis-server start"
-bash.exe -c "sudo service x2goserver start"
+bash.exe -c "sudo service xrdp start"
 bash.exe -c "sudo fallocate -l 8G /swapfile"
 bash.exe -c "sudo chmod 600 /swapfile"
 bash.exe -c "sudo mkswap /swapfile"
